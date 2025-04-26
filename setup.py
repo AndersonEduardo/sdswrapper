@@ -8,7 +8,7 @@ setup(
     long_description_content_type='text/markdown',
     author='Anderson Aires Eduardo',
     author_email='andersonaed@example.com',
-    url='https://github.com/AndersonEduardo/spatial-ds-wrapper',
+    url='https://github.com/AndersonEduardo/sdswrapper',
     packages=find_packages(),
     install_requires=[
         'numpy',
