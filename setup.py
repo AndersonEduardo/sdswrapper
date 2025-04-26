@@ -6,7 +6,7 @@ setup(
     description='A Python package for spatial data science workflows.',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
-    author='Anderson A. Eduardo',
+    author='Anderson Aires Eduardo',
     author_email='andersonaed@example.com',
     url='https://github.com/AndersonEduardo/sdswrapper',
     packages=find_packages(),
