@@ -2,14 +2,14 @@ from setuptools import setup, find_packages
 
 setup(
     name='sdswrapper',
-    version='0.2.4',
+    version='0.2.5',
     description='A Python package for spatial data science workflows.',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     author='Anderson Aires Eduardo',
     author_email='andersonaed@example.com',
     url='https://github.com/AndersonEduardo/sdswrapper',
-    packages=find_packages(),
+    packages=find_packages(include=['sdswrapper', 'sdswrapper.*']),
     include_package_data=True,
     install_requires=[
         'numpy',
