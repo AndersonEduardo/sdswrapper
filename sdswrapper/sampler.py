@@ -3,7 +3,7 @@ import rasterio
 import numpy as np
 import pandas as pd
 
-from utils.utils import array_to_dataframe
+from sdswrapper.utils.utils import array_to_dataframe
 
 
 

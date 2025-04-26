@@ -1,3 +1,5 @@
 include README.md
 include LICENSE
 recursive-include sdswrapper *.py
+include sdswrapper/*.py
+include sdswrapper/utils/*.py

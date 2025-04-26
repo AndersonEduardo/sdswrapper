@@ -11,7 +11,7 @@ from sklearn.model_selection import GroupKFold
 
 from pykrige.rk import RegressionKriging
 
-from ordinarykriginginterface import OrdinaryKrigingInterface
+from sdswrapper.ordinarykriginginterface import OrdinaryKrigingInterface
 
 
 

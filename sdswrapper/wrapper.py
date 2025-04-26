@@ -5,8 +5,8 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
-from sampler import SampleGenerator
-from models import Models
+from sdswrapper.sampler import SampleGenerator
+from sdswrapper.models import Models
 
 from sklearn.metrics import mean_squared_error
 
@@ -15,7 +15,7 @@ from rasterio.plot import show
 
 from pykrige.rk import RegressionKriging
 from pykrige.ok import OrdinaryKriging
-from ordinarykriginginterface import OrdinaryKrigingInterface
+from sdswrapper.ordinarykriginginterface import OrdinaryKrigingInterface
 
 
 

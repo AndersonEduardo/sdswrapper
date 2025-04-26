@@ -18,10 +18,10 @@ Others:
     PROJECTIONS_FOLDER (str): Path to the projections folder.
 """
 
-SUITABILITY_FILEPATH = "y/projection-Time0kyrBP-Replica1-Sample95.asc"
-ABUNDANCE_FILEPATH = "y/HW_simulated_population.pkl"
-P_1 = "p/wc2.1_2.5m_bio_1.tif"
-P_2 = "p/wc2.1_2.5m_bio_12.tif"
+SUITABILITY_FILEPATH = "sdswrapper/y/projection-Time0kyrBP-Replica1-Sample95.asc"
+ABUNDANCE_FILEPATH = "sdswrapper/y/HW_simulated_population.pkl"
+P_1 = "sdswrapper/p/wc2.1_2.5m_bio_1.tif"
+P_2 = "sdswrapper/p/wc2.1_2.5m_bio_12.tif"
 
 SKLEARN_X_COLUMNS = ['coordenada_X', 'coordenada_Y', 'bio01', 'bio12']
 SKLEARN_Y_COLUMN = 'y'
