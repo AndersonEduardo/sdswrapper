@@ -12,11 +12,13 @@ A Python package for spatial data science workflows.
 pip install sdswrapper
 ```
 
+Visit the main `PyPI` *[homepage](https://pypi.org/project/sdswrapper/)*.
+
 ## Usage
 ```python
 from sdswrapper import Wrapper
 
-# Example starts usage here
+# Use case starts usage here
 ```
 
 ## License
