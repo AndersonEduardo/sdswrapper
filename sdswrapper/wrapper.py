@@ -37,8 +37,8 @@ class Wrapper:
     def __init__(self, 
                  model_list: list,
                  dataset: pd.DataFrame,
-                 X_column_names: str,
-                 P_column_names: str,
+                 X_column_names: list,
+                 P_column_names: list,
                  y_column_name: str,
                  projections_folder: str,
                  k: int,
@@ -49,8 +49,8 @@ class Wrapper:
         Args:
             model_list (list): List of models to be trained.
             dataset (pd.DataFrame): Dataset containing input and output data.
-            X_column_names (str): Names of input columns.
-            P_column_names (str): Names of projection columns.
+            X_column_names (list): Names of input columns.
+            P_column_names (list): Names of projection columns.
             y_column_name (str): Name of the output column.
             projections_folder (str): Path to save projections.
             k (int): Number of folds for cross-validation.
@@ -87,8 +87,16 @@ class Wrapper:
 
 
         X = data[self.X_colum_names].astype(float).copy()
-        p = data[self.p_colum_names].astype(float).copy()
+        p = data[self.p_colum_names].astype(float).copy() \
+            if (self.p_colum_names != None) and (len(self.p_colum_names) > 0) else pd.DataFrame()
         y = data[self.y_column_name].astype(float).copy()
+
+
+        # TODO: apagar
+        print('$#@%'*20)
+        print('p:\n', p)
+        print('$#@%'*20)
+
 
         try:
 

@@ -30,15 +30,16 @@ class Models:
         spatial_groups (np.ndarray): Spatial groups for cross-validation.
     """
 
-    def __init__(self, models: list, X: pd.DataFrame, p: pd.DataFrame, y: pd.DataFrame, k: int, projections_folder: str) -> None:
+    def __init__(self, models: list, X: pd.DataFrame, p: pd.DataFrame, y: pd.DataFrame, 
+                 k: int, projections_folder: str) -> None:
         """
         Initializes the Models class with the provided data and settings.
 
         Args:
             models (list): List of models to be trained.
-            X (pd.DataFrame): Input data for training.
-            p (pd.DataFrame): Spatial projection data.
-            y (pd.DataFrame): Output (target) data.
+            X (pd.DataFrame): Coordinate data.
+            p (pd.DataFrame): Feature data.
+            y (pd.DataFrame): Target data.
             k (int): Number of folds for cross-validation.
             projections_folder (str): Path to save projections.
 
@@ -79,7 +80,7 @@ class Models:
         self.k = k
         self.sample_size = X.shape[0]
         self.projections_folder = projections_folder
-        self.spatial_groups = KMeans(n_clusters=self.k, random_state=42).fit_predict(self.P)
+        self.spatial_groups = KMeans(n_clusters=self.k, random_state=42).fit_predict(self.X)
 
 
 
@@ -147,6 +148,11 @@ class Models:
             pd.DataFrame: Processed projection data.
         """
 
+        if (p.empty) or (p == None):
+
+            return None
+
+
         p = p.reset_index(drop=True).astype('float32')
 
         P = self.__check_data(p)
@@ -184,7 +190,13 @@ class Models:
             pd.DataFrame: Combination of X and P.
         """
 
-        return pd.concat([X, p], axis=1).astype('float32').copy()
+        if p is None:
+
+            return X.astype('float32').copy()
+        
+        else:
+
+            return pd.concat([X, p], axis=1).astype('float32').copy()
 
 
     def fit(self):
@@ -197,11 +209,22 @@ class Models:
 
         output = list()
 
+        print('~~'*20)
+        print('self.P:\n', self.P)
+        print('~~'*20)
+
+
         for name, model in self.models:
 
             model_type = None
 
             if isinstance(model, RegressionKriging):
+
+                if self.P == None:
+
+                    print("`P` must be provided for Regression Kriging models. Skipping model:", name)
+
+                    continue
 
                 model_type = 'KR'
 
@@ -214,6 +237,12 @@ class Models:
                 model_metrics, model_trained = self._fit_ordinary_kriging_models(model)
 
             else:
+
+                if self.P == None:
+
+                    print("`P` must be provided for Regression Kriging models. Skipping model:", name)
+
+                    continue
 
                 model_type = 'SK'
 
@@ -286,7 +315,7 @@ class Models:
 
         # kf_idxs = [x for x in kf.split(self.Y.index)]
 
-        for train_idx, test_idx in group_kfold.split(self.P, self.Y, groups=self.spatial_groups):
+        for train_idx, test_idx in group_kfold.split(self.X, self.Y, groups=self.spatial_groups):
         # for k in range(self.k):
 
             X_train, X_test = self.X.iloc[train_idx].copy(), self.X.iloc[test_idx].copy()
