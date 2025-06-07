@@ -24,22 +24,22 @@ class Models:
         X (pd.DataFrame): Input data for training.
         P (pd.DataFrame): Spatial projection data.
         XP (pd.DataFrame): Combination of X and P.
-        Y (pd.DataFrame): Output (target) data.
+        Y (pd.Series): Output (target) data.
         k (int): Number of folds for cross-validation.
         projections_folder (str): Path to save projections.
         spatial_groups (np.ndarray): Spatial groups for cross-validation.
     """
 
-    def __init__(self, models: list, X: pd.DataFrame, p: pd.DataFrame, y: pd.DataFrame, 
+    def __init__(self, models: list, X: pd.DataFrame, p: pd.DataFrame, y: pd.Series, 
                  k: int, projections_folder: str) -> None:
         """
         Initializes the Models class with the provided data and settings.
 
         Args:
             models (list): List of models to be trained.
-            X (pd.DataFrame): Coordinate data.
-            p (pd.DataFrame): Feature data.
-            y (pd.DataFrame): Target data.
+            X (pd.DataFrame): Coordinate data. Shape should be (n_samples, 2 columns).
+            p (pd.DataFrame): Feature data. Shape should be (n_samples, n_features).
+            y (pd.Series): Target data. Shape should be (n_samples).
             k (int): Number of folds for cross-validation.
             projections_folder (str): Path to save projections.
 
@@ -84,7 +84,7 @@ class Models:
 
 
 
-    def __check_data(self, data: pd.DataFrame):
+    def __check_data(self, data: pd.DataFrame|pd.Series):
         """
         Checks if the data contains NaN or infinite values.
 
@@ -130,6 +130,15 @@ class Models:
             pd.DataFrame: Processed input data.
         """
 
+        if not isinstance(X, pd.DataFrame):
+
+            raise Exception(f"`X` must be a pandas DataFrame. Found: {type(X)}")
+
+        if X.empty:
+
+            raise Exception("`X` cannot be an empty DataFrame.")
+
+
         X = X.reset_index(drop=True).astype('float32')
 
         X = self.__check_data(X)
@@ -142,34 +151,50 @@ class Models:
         Sets the projection data P after verification and conversion.
 
         Args:
-            p (pd.DataFrame): Projection data.
+            p (pd.DataFrame): Features data.
 
         Returns:
-            pd.DataFrame: Processed projection data.
+            pd.DataFrame: Processed features data.
         """
 
-        if (p.empty) or (p == None):
+        if not isinstance(p, pd.DataFrame):
 
-            return None
+            raise Exception(f"`p` must be a pandas DataFrame. Found: {type(p)}")
 
+        if p.empty:
+
+            print('Warning: `p` is empty.')
 
         p = p.reset_index(drop=True).astype('float32')
 
-        P = self.__check_data(p)
+        p = self.__check_data(p)
 
         return p
 
 
-    def set_Y(self, y: pd.DataFrame):
+    def set_Y(self, y: pd.Series):
         """
         Sets the output data Y after verification and conversion.
 
         Args:
-            y (pd.DataFrame): Output data.
+            y (pd.Series): Output data.
 
         Returns:
-            pd.DataFrame: Processed output data.
+            pd.Series: Processed output data.
         """
+
+        if not isinstance(y, pd.Series):
+
+            raise Exception(f"`y` must be a pandas DataFrame. Found: {type(y)}")
+
+        if y.empty:
+
+            raise Exception("`y` cannot be an empty DataFrame.")
+
+        # if y.shape[1] > 1:
+
+        #     raise Exception("`y` must have only one column.")
+
 
         y = y.reset_index(drop=True).astype('float32')
 
@@ -190,7 +215,9 @@ class Models:
             pd.DataFrame: Combination of X and P.
         """
 
-        if p is None:
+        if p.empty:
+
+            print("Warning: `p` is empty. The property self.XP will be composed only by X. This can lead to problemns in the models that require `p`.")
 
             return X.astype('float32').copy()
         
@@ -209,20 +236,15 @@ class Models:
 
         output = list()
 
-        print('~~'*20)
-        print('self.P:\n', self.P)
-        print('~~'*20)
-
-
         for name, model in self.models:
 
             model_type = None
 
             if isinstance(model, RegressionKriging):
 
-                if self.P == None:
+                if self.P.empty:
 
-                    print("`P` must be provided for Regression Kriging models. Skipping model:", name)
+                    print("Warning: `P` must be provided for Regression Kriging models. Skipping model:", name)
 
                     continue
 
@@ -238,9 +260,9 @@ class Models:
 
             else:
 
-                if self.P == None:
+                if self.P.empty:
 
-                    print("`P` must be provided for Regression Kriging models. Skipping model:", name)
+                    print("Warning: `P` must be provided for Regression Kriging models. Skipping model:", name)
 
                     continue
 
@@ -374,22 +396,8 @@ class Models:
         rmse_scores = list()
         group_kfold = GroupKFold(n_splits=self.k)
 
-        # TODO: ajustar esta Validação cruzada para spatial cross-validation
-        # kf = KFold(n_splits=self.k, shuffle=True, random_state=42)
-
-        # kf_idxs = [x for x in kf.split(self.Y.index)]
 
         for train_idx, test_idx in group_kfold.split(self.P, self.Y, groups=self.spatial_groups):
-        # for k in range(self.k):
-
-            # X_train = self.X.loc[kf_idxs[k][0]].copy()
-            # X_test = self.X.loc[kf_idxs[k][1]].copy()
-
-            # P_train = self.P.loc[kf_idxs[k][0]].copy()
-            # P_test = self.P.loc[kf_idxs[k][1]].copy()
-
-            # Y_train = self.Y.loc[kf_idxs[k][0]].copy()
-            # Y_test = self.Y.loc[kf_idxs[k][1]].copy()
 
             X_train, X_test = self.X.iloc[train_idx].copy(), self.X.iloc[test_idx].copy()
             P_train, P_test = self.P.iloc[train_idx].copy(), self.P.iloc[test_idx].copy()
