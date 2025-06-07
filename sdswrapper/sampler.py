@@ -1,3 +1,4 @@
+import os
 import random
 import rasterio
 import numpy as np
@@ -21,8 +22,8 @@ class SampleGenerator:
         bioclim_12: Processed bioclimatic data 12.
     """
 
-    def __init__(self, y_filepath: str, p_1_filepath: str, p_2_filepath:str,
-                 georreferenced_raster_filepath:str) -> None:
+    def __init__(self, sample_file:str, features:str, probability_surface:str, 
+                 reference_polygon:list = None) -> None:
         """
         Initializes the SampleGenerator class with the provided file paths.
 
@@ -32,15 +33,125 @@ class SampleGenerator:
             p_2 (str): Path to the bioclimatic file 12.
             georreferenced_raster_filepath (str): Path to the georreferenced raster file.
         """
-        self.y_filepath = y_filepath
-        self.p_1_filepath = p_1_filepath
-        self.p_2_filepath = p_2_filepath
 
-        self.georreferenced_raster = self.set_georreferenced_raster(georreferenced_raster_filepath)
+        self.sample_file = self.set_sample_file(sample_file)
+        self.features = self.set_features(features)
+        self.probability_surface = self.set_probability_surface(probability_surface)
+        self.reference_polygon = self.set_reference_polygon(reference_polygon)
 
-        self.y = self.set_y(y_filepath)
-        self.p_1 = self.set_bioclim_01(self.p_1_filepath)
-        self.p_2 = self.set_bioclim_12(self.p_2_filepath)
+
+    def set_sample_file(self, sample_file: str):
+        """
+        Loads the sample file.
+
+        Args:
+            sample_file (str): Path to the sample file.
+
+        Returns:
+            pd.DataFrame: Loaded sample data.
+        """
+
+        if isinstance(sample_file, str):
+
+            if os.path.exists(sample_file) == False:
+
+                raise FileNotFoundError(f"Sample file not found: {sample_file}")
+
+            return pd.read_excel(sample_file)
+
+
+        # TODO: implementar para input raster (instancia do rasterio)
+
+
+        else:
+
+            raise TypeError("sample_file must be a string representing the file path to an Excel file.")
+
+
+    def set_features(self, features: str):
+        """
+        Loads the features data.
+        Args:
+            features (str): Path to the features file.
+        Returns:
+            pd.DataFrame: Loaded features data.
+        """
+
+        if isinstance(features, str):
+
+            if os.path.exists(features) == False:
+
+                raise FileNotFoundError(f"Features file not found: {features}")
+
+            features_list = list()
+
+            for filepath in os.listdir(features):
+
+                if filepath.endswith('.tif') or filepath.endswith('.asc'):
+
+                    raster = rasterio.open(os.path.join(features, filepath))
+
+                    feature_name = os.path.splitext(filepath)[0]
+
+                    features_list.append({'name': feature_name, 'raster': raster})
+
+            return features_list
+
+
+        # TODO: implementar para input raster (instancia do rasterio)
+
+
+        else:
+
+            raise TypeError("features must be a string representing the directory path containing raster files.")
+
+
+    def set_probability_surface(self, probability_surface:str):
+        """
+        Loads the probability surface data.
+
+        Args:
+            probability_surface (str): Path to the probability surface file.
+
+        Returns:
+            pd.DataFrame: Loaded probability surface data.
+        """
+
+        if isinstance(probability_surface, str):
+
+            if os.path.exists(probability_surface) == False:
+
+                raise FileNotFoundError(f"Probability surface file not found: {probability_surface}")
+
+            return rasterio.open(probability_surface)
+        
+
+        # TODO: implementar para input raster (instancia do rasterio)
+
+
+        else:
+
+            raise TypeError("probability_surface must be a string representing the file path to a raster file.")
+
+
+    def set_reference_polygon(self, reference_polygon:list):
+        """
+        Sets the reference polygon for masking.
+
+        Args:
+            reference_polygon (list): List of coordinates defining the polygon.
+
+        Returns:
+            list: Reference polygon.
+        """
+
+        if isinstance(reference_polygon, list):
+
+            return reference_polygon
+
+        else:
+
+            raise TypeError("reference_polygon must be a list of coordinates defining the polygon.")
 
 
     def set_georreferenced_raster(self, georreferenced_raster_filepath:str):
@@ -60,7 +171,7 @@ class SampleGenerator:
         """
         y = pd.read_pickle(y_filepath)
 
-        return np.where(y > 1000, 1000, y)
+        return np.where(y > 1000, 1000, y) # TODO: ajustar aqui (esta assim por conta do caso de  estudo)
 
 
     def set_bioclim_01(self, p_1: str):
