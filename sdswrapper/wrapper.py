@@ -262,7 +262,6 @@ class Wrapper:
 
         y = data[self.y_column_name].astype(float).copy()
 
-
         try:
 
             models = self.set_models(X, p, y)

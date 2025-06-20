@@ -83,7 +83,6 @@ class Models:
         self.spatial_groups = KMeans(n_clusters=self.k, random_state=42).fit_predict(self.X)
 
 
-
     def __check_data(self, data: pd.DataFrame|pd.Series):
         """
         Checks if the data contains NaN or infinite values.
@@ -311,7 +310,6 @@ class Models:
 
         mse_scores = -scores 
         rmse_scores = np.sqrt(mse_scores)
-
 
         model.fit(self.P.values, self.Y.values)
 
