@@ -95,15 +95,20 @@ class SampleGenerator:
 
                 raise FileNotFoundError(f"Features folder not found: {features}")
 
+
             features_list = list()
 
             for filepath in os.listdir(features):
 
                 if filepath.endswith('.tif') or filepath.endswith('.asc'):
 
+                    feature_name = os.path.splitext(filepath)[0]
+
                     with rasterio.open(os.path.join(features, filepath)) as raster:
 
-                        feature_name = os.path.splitext(filepath)[0]
+                        if self.reference_polygon is None:
+
+                            self.reference_polygon = self.get_polygon(raster)
 
                         raster_data = rasterio.mask.mask(raster, self.reference_polygon, crop=True)[0][0]
                         raster_data = copy.deepcopy(raster_data)
@@ -136,6 +141,11 @@ class SampleGenerator:
         Returns:
             pd.DataFrame: Loaded probability surface data.
         """
+
+        if probability_surface is None:
+
+            return None
+
 
         if isinstance(probability_surface, str):
 
@@ -185,6 +195,10 @@ class SampleGenerator:
         Returns:
             list: Reference polygon.
         """
+
+        if reference_polygon is None:
+
+            return None
         
         if not isinstance(reference_polygon, list):
             
@@ -192,92 +206,6 @@ class SampleGenerator:
 
 
         return reference_polygon
-
-
-    # def apply_reference_polygon_to_all_rasters(self):
-    #     """
-    #     Applies the reference polygon to all raster data in the features list.
-
-    #     Returns:
-    #         list: List of features with masked raster data.
-    #     """
-
-    #     if not self.reference_polygon:
-
-    #         raise ValueError("Reference polygon is not set.")
-
-
-    #     # Mask all features with the reference polygon
-    #     masked_features = []
-
-    #     for feature in self.features:
-
-    #         masked_raster = self.get_masked_data(feature['raster'], self.reference_polygon)
-
-    #         masked_features.append({'name': feature['name'], 'raster': masked_raster})
-
-    #     self.features = masked_features
-
-
-    #     # Apply the reference polygon to the probability surface
-    #     self.probability_surface = \
-    #         self.get_masked_data(self.probability_surface, self.reference_polygon)
-        
-    #     print('Reference polygon applied to all raster data.')
-
-
-    # def set_georreferenced_raster(self, georreferenced_raster_filepath:str):
-
-    #     return rasterio.open(georreferenced_raster_filepath)
-
-
-    # def set_y(self, y_filepath: str):
-    #     """
-    #     Loads and adjusts the y data from the provided file.
-
-    #     Args:
-    #         y_filepath (str): Path to the y file.
-
-    #     Returns:
-    #         np.ndarray: Adjusted y data.
-    #     """
-    #     y = pd.read_pickle(y_filepath)
-
-    #     return np.where(y > 1000, 1000, y) # TODO: ajustar aqui (esta assim por conta do caso de  estudo)
-
-
-    # def set_bioclim_01(self, p_1: str):
-    #     """
-    #     Loads and processes the bioclimatic data 01.
-
-    #     Args:
-    #         p_1 (str): Path to the bioclimatic file 01.
-
-    #     Returns:
-    #         np.ndarray: Processed bioclimatic data 01.
-    #     """
-    #     p_1 = rasterio.open(p_1)
-
-    #     p_1 = self.get_masked_data(p_1, self.get_polygon(self.georreferenced_raster))
-
-    #     return p_1[:-1, :-1]
-
-
-    # def set_bioclim_12(self, p_2: str):
-    #     """
-    #     Loads and processes the bioclimatic data 12.
-
-    #     Args:
-    #         p_2 (str): Path to the bioclimatic file 12.
-
-    #     Returns:
-    #         np.ndarray: Processed bioclimatic data 12.
-    #     """
-    #     p_2 = rasterio.open(p_2)
-
-    #     p_2 = self.get_masked_data(p_2, self.get_polygon(self.georreferenced_raster))
-
-    #     return p_2[:-1, :-1]
 
 
     @staticmethod
@@ -291,6 +219,7 @@ class SampleGenerator:
         Returns:
             list: Polygon representing the data bounds.
         """
+
         bbox = georreferenced_raster.bounds
 
         return [{
@@ -348,6 +277,7 @@ class SampleGenerator:
                 else:
 
                     raise TypeError("Each item in raster_data list must be a numpy array.")
+
 
             return masked_data
         
@@ -415,6 +345,7 @@ class SampleGenerator:
                 p = valid_probabilities
             )
 
+
             return np.array(valid_coordinates)[sampled_coordinates]
 
         else:
@@ -433,6 +364,11 @@ class SampleGenerator:
         Returns:
             list: Sampled coordinates.
         """
+
+        if self.probability_surface is None:
+
+            raise ValueError("Probability surface is not set. Please provide a valid probability surface.")
+
 
         if pseudoabsences == True:
 
@@ -454,7 +390,8 @@ class SampleGenerator:
 
         else:
 
-            raise ValueError("`pseudoabsences` must be a python bool.ß")
+            raise ValueError("`pseudoabsences` must be a python bool.")
+
 
         return self.sample_coordinates(
             data = data_processed,
@@ -481,6 +418,7 @@ class SampleGenerator:
 
             output_values.append((coord[0], coord[1], raster[coord[1], coord[0]]))
 
+
         return output_values
 
 
@@ -506,6 +444,7 @@ class SampleGenerator:
         sample_output = list()
         sample_row = dict()
 
+
         for coord in sampled_coords:
 
             sample_row.update(
@@ -525,6 +464,7 @@ class SampleGenerator:
 
             sample_output.append(sample_row.copy())
 
+
         return pd.DataFrame(sample_output).astype(np.float64)
 
 
@@ -539,11 +479,16 @@ class SampleGenerator:
 
         df_fulldata = pd.DataFrame()
 
+
+        # nome = None
+
+
         for feature in self.features:
 
             feature_df = array_to_dataframe(feature['raster'])
 
             feature_df.rename(columns={'value': feature['name']}, inplace=True)
+
 
             if df_fulldata.empty:
 
@@ -551,9 +496,13 @@ class SampleGenerator:
 
             else:
 
-                df_fulldata = pd.merge(df_fulldata, feature_df, on=['x', 'y'], how='outer')
+                # df_fulldata = pd.merge(df_fulldata, feature_df, on=['x', 'y'], how='outer')
+                df_fulldata = pd.merge(df_fulldata, feature_df, left_index=True, right_index=True, how='outer')
 
 
-        df_fulldata.rename(columns={'x': 'lon', 'y': 'lat'}, inplace=True)
+        df_fulldata = df_fulldata.drop(columns=['x_y', 'y_y'])
+
+        df_fulldata.rename(columns={'x_x': 'lon', 'y_x': 'lat'}, inplace=True)
+
 
         return df_fulldata

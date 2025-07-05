@@ -569,6 +569,7 @@ class Wrapper:
         Raises:
             TypeError: If input types are incorrect.
         """
+
         column_name = kwargs.get('column_name', None)
 
         if (column_name is not None) and (not isinstance(column_name, str)):

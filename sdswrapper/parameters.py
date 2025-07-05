@@ -24,3 +24,5 @@ EXAMPLE_SAMPLE_FILEPATH = os.path.join('sdswrapper','sample', 'S50_P50.xlsx')
 EXAMPLE_FEATURES_FILEPATH = os.path.join('sdswrapper','features')
 EXAMPLE_PROBABILITY_SURFACE_FILEPATH = os.path.join('sdswrapper','probability_surface', 
                                                     'probability_surface_example.asc')
+EXAMPLE_GROUND_TRUTH_FILEPATH = os.path.join('sdswrapper','ground_truth_example',
+                                              'ground_truth_example.pkl')
