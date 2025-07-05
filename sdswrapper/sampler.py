@@ -24,7 +24,7 @@ class SampleGenerator:
         bioclim_12: Processed bioclimatic data 12.
     """
 
-    def __init__(self, sample_file:str, features:str, 
+    def __init__(self, sample_file:str = None, features:str = None,
                  probability_surface:str = None,
                  reference_polygon:list = None) -> None:
         """
@@ -55,6 +55,11 @@ class SampleGenerator:
             pd.DataFrame: Loaded sample data.
         """
 
+        if sample_file is None:
+
+            return None
+
+
         if isinstance(sample_file, str):
 
             if os.path.exists(sample_file) == False:
@@ -80,7 +85,7 @@ class SampleGenerator:
             raise TypeError("sample_file must be a string representing the file path to an Excel file.")
 
 
-    def set_features(self, features: str):
+    def set_features(self, features:str):
         """
         Loads the features data.
         Args:
@@ -88,6 +93,11 @@ class SampleGenerator:
         Returns:
             pd.DataFrame: Loaded features data.
         """
+
+        if features is None:
+
+            return None
+
 
         if isinstance(features, str):
 
@@ -154,6 +164,10 @@ class SampleGenerator:
                 raise FileNotFoundError(f"Probability surface file not found: {probability_surface}")
 
             with rasterio.open(probability_surface) as raster:
+
+                if self.reference_polygon is None:
+
+                    self.reference_polygon = self.get_polygon(raster)
 
                 raster_data = rasterio.mask.mask(raster, self.reference_polygon, crop=True)[0][0]
                 # raster_data = raster.read(1)
@@ -440,6 +454,7 @@ class SampleGenerator:
 
 
         sampled_coords = self.get_sample_coordinates(n, pseudoabsences=pseudoabsences)
+        features = [] if self.features is None else self.features
 
         sample_output = list()
         sample_row = dict()
@@ -454,7 +469,7 @@ class SampleGenerator:
                     }
             )
 
-            for feature in self.features:
+            for feature in features:
 
                 sample_row.update(
                     {
@@ -476,6 +491,11 @@ class SampleGenerator:
         Returns:
             pd.DataFrame: Combined data in DataFrame format.
         """
+
+        if self.features is None:
+
+            raise ValueError("Features file path is not set. Please provide a valid sample file.")
+
 
         df_fulldata = pd.DataFrame()
 
