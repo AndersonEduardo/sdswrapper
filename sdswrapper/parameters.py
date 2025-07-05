@@ -18,15 +18,11 @@ Others:
     PROJECTIONS_FOLDER (str): Path to the projections folder.
 """
 
-SUITABILITY_FILEPATH = "sdswrapper/y/projection-Time0kyrBP-Replica1-Sample95.asc"
-ABUNDANCE_FILEPATH = "sdswrapper/y/HW_simulated_population.pkl"
-P_1 = "sdswrapper/p/wc2.1_2.5m_bio_1.tif"
-P_2 = "sdswrapper/p/wc2.1_2.5m_bio_12.tif"
+import os
 
-SKLEARN_X_COLUMNS = ['coordenada_X', 'coordenada_Y', 'bio01', 'bio12']
-SKLEARN_Y_COLUMN = 'y'
-REGRESSION_KRIGING_X_COLUMNS = ['coordenada_X', 'coordenada_Y']
-REGRESSION_KRIGING_P_COLUMN = ['bio01', 'bio12']
-REGRESSION_KRIGING_Y_COLUMN = 'y'
-
-PROJECTIONS_FOLDER = 'x'
+EXAMPLE_SAMPLE_FILEPATH = os.path.join('sdswrapper','sample', 'S50_P50.xlsx')
+EXAMPLE_FEATURES_FILEPATH = os.path.join('sdswrapper','features')
+EXAMPLE_PROBABILITY_SURFACE_FILEPATH = os.path.join('sdswrapper','probability_surface', 
+                                                    'probability_surface_example.asc')
+EXAMPLE_GROUND_TRUTH_FILEPATH = os.path.join('sdswrapper','ground_truth_example',
+                                              'ground_truth_example.pkl')

@@ -37,8 +37,8 @@ class Wrapper:
     def __init__(self, 
                  model_list: list,
                  dataset: pd.DataFrame,
-                 X_column_names: str,
-                 P_column_names: str,
+                 X_column_names: list,
+                 P_column_names: list,
                  y_column_name: str,
                  projections_folder: str,
                  k: int,
@@ -49,23 +49,191 @@ class Wrapper:
         Args:
             model_list (list): List of models to be trained.
             dataset (pd.DataFrame): Dataset containing input and output data.
-            X_column_names (str): Names of input columns.
-            P_column_names (str): Names of projection columns.
+            X_column_names (list): Names of input columns.
+            P_column_names (list): Names of projection columns.
             y_column_name (str): Name of the output column.
             projections_folder (str): Path to save projections.
             k (int): Number of folds for cross-validation.
             gridsearch_parameters (list, optional): List of tuples for grid search parameters.
         """
-        self.model_list = model_list
-        self.dataset = dataset
-        self.X_colum_names = X_column_names
-        self.p_colum_names = P_column_names
-        self.y_column_name = y_column_name
-        self.gridsearch_parameters = gridsearch_parameters
+        self.model_list = self.set_model_list(model_list)
+        self.dataset = self.set_dataset(dataset)
+        self.X_colum_names = self.set_X_column_names(X_column_names)
+        self.p_colum_names = self.set_p_column_names(P_column_names)
+        self.y_column_name = self.set_y_column_name(y_column_name)
+        self.gridsearch_parameters = self.set_gridsearch_parameters(gridsearch_parameters)
         # self.projector = projector # TODO
-        self.k = k
+        self.k = self.set_k(k)
         # self.tag = tag
-        self.projections_folder = projections_folder
+        self.projections_folder = self.set_projections_folder(projections_folder)
+
+
+    def set_model_list(self, model_list: list):
+        """
+        Sets the model list for training.
+
+        Args:
+            model_list (list): List of models to be trained.
+
+        Returns:
+            list: Validated model list.
+        """
+
+        if not isinstance(model_list, list):
+
+            raise TypeError('`model_list` must be a python list.')
+
+        return model_list
+
+
+    def set_dataset(self, dataset: pd.DataFrame):
+        """
+        Sets the dataset for training.
+        Args:
+            dataset (pd.DataFrame): Dataset containing input and output data.
+        Returns:
+            pd.DataFrame: Validated dataset.
+        """
+
+        if not isinstance(dataset, pd.DataFrame):
+
+            raise TypeError('`dataset` must be a pandas DataFrame.')
+
+        return dataset
+
+
+    def set_X_column_names(self, X_column_names: list):
+        """
+        Sets the names of input columns.
+        Args:
+            X_column_names (list): Names of input columns.
+        Returns:
+            list: Validated names of input columns.
+        """
+
+        if not isinstance(X_column_names, list):
+
+            raise TypeError('`X_column_names` must be a python list.')
+
+        if len(X_column_names) == 0:
+
+            raise ValueError('`X_column_names` cannot be an empty list.')
+
+        return X_column_names
+
+
+    def set_p_column_names(self, P_column_names: list):
+        """
+        Sets the names of projection columns.
+        Args:
+            P_column_names (list): Names of projection columns.
+        Returns:
+            list: Validated names of projection columns.
+        """
+
+        if not isinstance(P_column_names, list):
+
+            raise TypeError('`P_column_names` must be a python list.')
+
+        if len(P_column_names) == 0:
+
+            return None
+
+        return P_column_names
+
+
+    def set_y_column_name(self, y_column_name: str):
+        """
+        Sets the name of the output column.
+        Args:
+            y_column_name (str): Name of the output column.
+        Returns:
+            str: Validated name of the output column.
+        """
+
+        if not isinstance(y_column_name, str):
+
+            raise TypeError('`y_column_name` must be a string.')
+
+        if len(y_column_name) == 0:
+
+            raise ValueError('`y_column_name` cannot be an empty string.')
+
+        return y_column_name
+    
+
+    def set_gridsearch_parameters(self, gridsearch_parameters: list):
+        """
+        Sets the grid search parameters for model training.
+
+        Args:
+            gridsearch_parameters (list): List of tuples for grid search parameters.
+
+        Returns:
+            list: Validated grid search parameters.
+        """
+
+        if gridsearch_parameters is None:
+
+            return []
+
+        if not isinstance(gridsearch_parameters, list):
+
+            raise TypeError('`gridsearch_parameters` must be a python list.')
+
+        if len(gridsearch_parameters) == 0:
+
+            return []
+
+        return gridsearch_parameters
+
+
+    def set_k(self, k: int):
+        """
+        Sets the number of folds for cross-validation.
+
+        Args:
+            k (int): Number of folds for cross-validation.
+
+        Returns:
+            int: Validated number of folds.
+        """
+
+        if not isinstance(k, int):
+
+            raise TypeError('`k` must be an integer.')
+
+        if k <= 0:
+
+            raise ValueError('`k` must be a positive integer.')
+
+        return k
+
+
+    def set_projections_folder(self, projections_folder: str):
+        """
+        Sets the path to save projections.
+
+        Args:
+            projections_folder (str): Path to save projections.
+
+        Returns:
+            str: Validated path to save projections.
+        """
+
+        if not isinstance(projections_folder, str):
+
+            raise TypeError('`projections_folder` must be a string.')
+
+        if len(projections_folder) == 0:
+
+            raise ValueError('`projections_folder` cannot be an empty string.')
+        
+        if not os.path.exists(projections_folder):
+
+            raise ValueError(f'`projections_folder` does not exist: {projections_folder}')
+
+        return projections_folder
 
 
     def fit(self):
@@ -75,6 +243,7 @@ class Wrapper:
         Returns:
             dict: Profiles of trained models.
         """
+
         model_profiles = dict()
 
         try:
@@ -87,7 +256,10 @@ class Wrapper:
 
 
         X = data[self.X_colum_names].astype(float).copy()
-        p = data[self.p_colum_names].astype(float).copy()
+
+        p = data[self.p_colum_names].astype(float).copy() \
+            if (self.p_colum_names != None) and (len(self.p_colum_names) > 0) else pd.DataFrame()
+
         y = data[self.y_column_name].astype(float).copy()
 
         try:
@@ -104,14 +276,14 @@ class Wrapper:
         return model_profiles
 
 
-    def set_models(self, X: pd.DataFrame, p: pd.DataFrame, y: pd.DataFrame):
+    def set_models(self, X: pd.DataFrame, p: pd.DataFrame, y: pd.Series):
         """
         Configures the models with the provided data.
 
         Args:
             X (pd.DataFrame): Input data.
             p (pd.DataFrame): Projection data.
-            y (pd.DataFrame): Output data.
+            y (pd.Series): Output data.
 
         Returns:
             Models: Configured models instance.
@@ -397,6 +569,7 @@ class Wrapper:
         Raises:
             TypeError: If input types are incorrect.
         """
+
         column_name = kwargs.get('column_name', None)
 
         if (column_name is not None) and (not isinstance(column_name, str)):
