@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import rasterio.mask
 
-from sdswrapper.utils.utils import array_to_dataframe
+from sdswrapper.utils.utils import array_to_dataframe, pad_array
 
 
 
@@ -85,28 +85,85 @@ class SampleGenerator:
             raise TypeError("sample_file must be a string representing the file path to an Excel file.")
 
 
-    def set_features(self, features:str):
+    # def set_features(self, features:str):
+    #     """
+    #     Loads the features data.
+    #     Args:
+    #         features (str): Path to the features file.
+    #     Returns:
+    #         pd.DataFrame: Loaded features data.
+    #     """
+
+    #     if features is None:
+
+    #         return None
+
+
+    #     if isinstance(features, str):
+
+    #         if os.path.isdir(features) == False:
+
+    #             raise FileNotFoundError(f"Features folder not found: {features}")
+
+
+    #         features_list = list()
+
+    #         for filepath in os.listdir(features):
+
+    #             if filepath.endswith('.tif') or filepath.endswith('.asc'):
+
+    #                 feature_name = os.path.splitext(filepath)[0]
+
+    #                 with rasterio.open(os.path.join(features, filepath)) as raster:
+
+    #                     if self.reference_polygon is None:
+
+    #                         self.reference_polygon = self.get_polygon(raster)
+
+    #                     raster_data = rasterio.mask.mask(raster, self.reference_polygon, crop=True)[0][0]
+    #                     raster_data = copy.deepcopy(raster_data)
+    #                     # raster = raster.read(1)
+
+    #                     if raster_data.ndim != 2:
+
+    #                         raise ValueError("Probability surface data must be a 2D array.")
+
+    #                     features_list.append({'name': feature_name, 'raster': raster_data})
+
+    #         return features_list
+
+
+    #     # TODO: implementar para input raster (instancia do rasterio)
+
+
+    #     else:
+
+    #         raise TypeError("features must be a string representing the directory path containing raster files.")
+
+
+    def set_features(self, features: str):
         """
-        Loads the features data.
+        Loads the features data from raster files (.tif or .asc).
+        Pads all rasters to have the same dimensions.
+        
         Args:
-            features (str): Path to the features file.
+            features (str): Path to the features folder.
+
         Returns:
-            pd.DataFrame: Loaded features data.
+            list[dict]: List of dicts with 'name' and padded 2D 'raster' array.
         """
 
         if features is None:
 
             return None
 
-
         if isinstance(features, str):
 
-            if os.path.isdir(features) == False:
+            if not os.path.isdir(features):
 
                 raise FileNotFoundError(f"Features folder not found: {features}")
 
-
-            features_list = list()
+            features_list = []
 
             for filepath in os.listdir(features):
 
@@ -122,7 +179,6 @@ class SampleGenerator:
 
                         raster_data = rasterio.mask.mask(raster, self.reference_polygon, crop=True)[0][0]
                         raster_data = copy.deepcopy(raster_data)
-                        # raster = raster.read(1)
 
                         if raster_data.ndim != 2:
 
@@ -130,15 +186,16 @@ class SampleGenerator:
 
                         features_list.append({'name': feature_name, 'raster': raster_data})
 
+            # Encontra dimensões máximas entre todos os rasters
+            max_h = max(f['raster'].shape[0] for f in features_list)
+            max_w = max(f['raster'].shape[1] for f in features_list)
+
+            # Aplica padding em todos
+            for f in features_list:
+
+                f['raster'] = pad_array(f['raster'], max_h, max_w, pad_value=np.nan)
+
             return features_list
-
-
-        # TODO: implementar para input raster (instancia do rasterio)
-
-
-        else:
-
-            raise TypeError("features must be a string representing the directory path containing raster files.")
 
 
     def set_probability_surface(self, probability_surface:str):

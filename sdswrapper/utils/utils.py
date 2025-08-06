@@ -68,3 +68,13 @@ def array_to_dataframe(array:np.array):
             output_values.append((x, y, array[y, x]))
 
     return pd.DataFrame(output_values, columns=['x', 'y', 'value'])
+
+
+def pad_array(array, target_h, target_w, pad_value=np.nan):
+    """Faz padding em uma array 2D até o tamanho desejado."""
+
+    h, w = array.shape
+    pad_h = target_h - h
+    pad_w = target_w - w
+
+    return np.pad(array, ((0, pad_h), (0, pad_w)), constant_values=pad_value)
